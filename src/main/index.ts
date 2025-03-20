@@ -1,7 +1,46 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
+import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { exec } from 'child_process';
+import { dialog } from 'electron/main';
+
+async function runPythonScript() {
+  const pythonScriptPath = path.join(__dirname, 'python_scripts', 'main.py');
+  try {
+    const result = await new Promise((resolve, reject) => {
+      exec(`python ${pythonScriptPath}`, (error, stdout, stderr) => {
+        if (error) {
+          console.log(error);
+          reject(error)
+        } else if (stderr) {
+          console.log(stderr);
+          reject(stderr)
+        } else {
+          resolve(stdout);
+        }
+      });
+    });
+    console.log(`Python script output: ${result}`);
+    return 'ok';
+  } catch (error) {
+    console.error(`Error executing Python script: ${error}`);
+    throw error; // 可以选择重新抛出错误或返回特定的值
+  }
+}
+
+function handleSetTitle (event, title) {
+  const webContents = event.sender
+  const win = BrowserWindow.fromWebContents(webContents)
+  win?.setTitle(title)
+}
+
+async function handleFileOpen () {
+  const { canceled, filePaths } = await dialog.showOpenDialog({})
+  if (!canceled) {
+    return filePaths[0]
+  }
+}
 
 function createWindow(): void {
   // Create the browser window.
@@ -49,8 +88,17 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  optimizer.registerFramelessWindowIpc()
+  // ipcMain.handle('runPythonScript',() => runPythonScript())
   // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  ipcMain.handle('dialog:openFile', handleFileOpen)
+  ipcMain.handle('ping', async () => { return 'pong'})
+  ipcMain.on('set-title', handleSetTitle)
+  ipcMain.on('go-back', async (event) => {
+      const win = BrowserWindow.fromWebContents(event.sender)
+      console.log('go back')
+    })
+    
 
   createWindow()
 
