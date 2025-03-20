@@ -19,13 +19,7 @@ export default defineConfig({
     plugins: [react()],
     // 新增server代理配置
     server: {
-      proxy: {
-        '/api': {
-          target: 'http://localhost:8081',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, '')
-        }
-      }
+      proxy: {}
     }
   }
 })
