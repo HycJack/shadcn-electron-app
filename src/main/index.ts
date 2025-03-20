@@ -1,33 +1,33 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import path, { join } from 'path'
+import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { exec } from 'child_process';
+// import { exec } from 'child_process';
 import { dialog } from 'electron/main';
 
-async function runPythonScript() {
-  const pythonScriptPath = path.join(__dirname, 'python_scripts', 'main.py');
-  try {
-    const result = await new Promise((resolve, reject) => {
-      exec(`python ${pythonScriptPath}`, (error, stdout, stderr) => {
-        if (error) {
-          console.log(error);
-          reject(error)
-        } else if (stderr) {
-          console.log(stderr);
-          reject(stderr)
-        } else {
-          resolve(stdout);
-        }
-      });
-    });
-    console.log(`Python script output: ${result}`);
-    return 'ok';
-  } catch (error) {
-    console.error(`Error executing Python script: ${error}`);
-    throw error; // 可以选择重新抛出错误或返回特定的值
-  }
-}
+// async function runPythonScript() {
+//   const pythonScriptPath = path.join(__dirname, 'python_scripts', 'main.py');
+//   try {
+//     const result = await new Promise((resolve, reject) => {
+//       exec(`python ${pythonScriptPath}`, (error, stdout, stderr) => {
+//         if (error) {
+//           console.log(error);
+//           reject(error)
+//         } else if (stderr) {
+//           console.log(stderr);
+//           reject(stderr)
+//         } else {
+//           resolve(stdout);
+//         }
+//       });
+//     });
+//     console.log(`Python script output: ${result}`);
+//     return 'ok';
+//   } catch (error) {
+//     console.error(`Error executing Python script: ${error}`);
+//     throw error; // 可以选择重新抛出错误或返回特定的值
+//   }
+// }
 
 function handleSetTitle (event, title) {
   const webContents = event.sender
@@ -40,6 +40,7 @@ async function handleFileOpen () {
   if (!canceled) {
     return filePaths[0]
   }
+  return ""
 }
 
 function createWindow(): void {
@@ -94,8 +95,8 @@ app.whenReady().then(() => {
   ipcMain.handle('dialog:openFile', handleFileOpen)
   ipcMain.handle('ping', async () => { return 'pong'})
   ipcMain.on('set-title', handleSetTitle)
-  ipcMain.on('go-back', async (event) => {
-      const win = BrowserWindow.fromWebContents(event.sender)
+  ipcMain.on('go-back', async () => {
+      // const win = BrowserWindow.fromWebContents(event.sender)
       console.log('go back')
     })
     
